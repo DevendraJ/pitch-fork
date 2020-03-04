@@ -1,41 +1,52 @@
 const express = require('express')
-const os = require('os');
-var fs = require('fs')
-var bodyParser = require('body-parser');
+const os = require('os')
+const fs = require('fs')
+const router = express.Router()
 
 const app = express()
-app.use(bodyParser.json()); // support json encoded bodies
-app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+app.use('/*', express.urlencoded({ extended: true }))
+app.use(express.json())
+app.use(router)
 
-const port = 3000
-const logFile = fs.createWriteStream(os.homedir() + '/pitch-fork-log.txt', { flags: 'a' });
-
-app.get('/*', (req, res) => handler(req, res))
-
-app.post('/*', (req, res) => handler(req, res))
-
+var port = 3000
 app.listen(port, () => console.log(`pitch-fork listening on port ${port}!`))
 
+router.get('/*', (req, res) => handler(req, res))
+
+router.post('/npp/farmerRegistrationData', (req, res) => handleFarmerRegistrationDataImport(req, res))
+
 function handler(req, res) {
+     var logFile = fs.createWriteStream(os.homedir() + '/pitch-fork-log.txt', { flags: 'a' });	
      var endPoint = req.originalUrl
      var clientId = req.header('clientId')
-     var clientPassword = req.header('clientPassword')
-     var payLoad = req.body
-
-     validateCredentials(clientId, clientPassword)
-
-     logFile.write('\n---------------\n')
-     logFile.write('calledAt: ' + JSON.stringify(new Date()) + '\n')
-     logFile.write('requestUrl: ' + endPoint + '\n')
-     logFile.write('clientId:' + clientId + '\n')
-     logFile.write('clientPassword: ' + clientPassword + '\n')
-     logFile.write('requestPayload: \n' + JSON.stringify(payLoad, null, '\t') + '\n')
-
+     logFile.write('\napp used at '+ new Date())
      res.send('Hello World!')
 }
 
-function validateCredentials(clientId, clientPassword) {
-
+function handleFarmerRegistrationDataImport(req, res) {
+	var logFile = fs.createWriteStream(os.homedir() + '/pitch-fork-log.txt', { flags: 'a' });	
+	var headers = req.headers
+	var body = req.body
+	var dateTime = new Date()
+	var { "transaction_id": transactionId } = headers
+	var response = { "client_id": "test_user",
+			 "transaction_id": transactionId,
+			 "ack_id": transactionId, 
+			 "service_code": "farmer_reg_api", 
+			 "transaction_status": "S", 
+			 "transaction_remarks": "Success", 
+			 "transaction_start_date": dateTime, 
+			 "transaction_end_date": dateTime, 
+			 "row_affected": 1, 
+			 "response_code": 200, 
+			 "response_desc": "Success" };
+	
+	logFile.write('\n\n====================================='+ dateTime + '=====================================');
+	logFile.write('\nAPI: Farmers Registration')
+	logFile.write('\nRequest Headers:\n'+ JSON.stringify(headers, null, '\t'))
+	logFile.write('\nRequest Body:\n' + JSON.stringify(body, null, '\t'))
+	logFile.write('\nResponse Body:\n' + JSON.stringify(response, null, '\t'))
+	logFile.write('\n=================================================================================================================')			 
+	res.send(response)
 }
 
-// https://scotch.io/tutorials/use-expressjs-to-get-url-and-post-parameters
