@@ -6,20 +6,28 @@ exports.farmerAPIHandler = function (req, res) {
     var headers = req.headers
     var body = req.body
     var dateTime = new Date()
-    var { "transaction_id": transactionId } = headers
-    var response = {
-        "client_id": "test_user",
-        "transaction_id": transactionId,
-        "ack_id": transactionId,
-        "service_code": "farmer_reg_api",
-        "transaction_status": "S",
-        "transaction_remarks": "Success",
-        "transaction_start_date": dateTime,
-        "transaction_end_date": dateTime,
-        "row_affected": 1,
-        "response_code": 200,
-        "response_desc": "Success"
-    };
+    var clientId;
+
+	var { "transaction_id": transactionId, "authorization": auth } = headers
+	if (auth) {
+		auth = auth.split(' ')[1]
+		clientId = Buffer.from(auth, 'base64').toString()
+		clientId = clientId.split(':')[0]
+	}
+
+	var response = {
+		"client_id": clientId,
+		"transaction_id": transactionId,
+		"ack_id": transactionId,
+		"service_code": "farmer_reg_api",
+		"transaction_status": "S",
+		"transaction_remarks": "Success",
+		"transaction_start_date": dateTime,
+		"transaction_end_date": dateTime,
+		"row_affected": 1,
+		"response_code": 200,
+		"response_desc": "Success"
+	};
 
     logFile.write('\n\n=====================================' + dateTime + '=====================================');
     logFile.write('\nAPI: Farmers Registration')
