@@ -16,37 +16,47 @@ router.get('/*', (req, res) => handler(req, res))
 router.post('/npp/farmerRegistrationData', (req, res) => handleFarmerRegistrationDataImport(req, res))
 
 function handler(req, res) {
-     var logFile = fs.createWriteStream(os.homedir() + '/pitch-fork-log.txt', { flags: 'a' });	
-     var endPoint = req.originalUrl
-     var clientId = req.header('clientId')
-     logFile.write('\napp used at '+ new Date())
-     res.send('Hello World!')
+	var logFile = fs.createWriteStream(os.homedir() + '/pitch-fork-log.txt', { flags: 'a' });
+	var endPoint = req.originalUrl
+	var clientId = req.header('clientId')
+	logFile.write('\napp used at ' + new Date())
+	res.send('Hello World!')
 }
 
 function handleFarmerRegistrationDataImport(req, res) {
-	var logFile = fs.createWriteStream(os.homedir() + '/pitch-fork-log.txt', { flags: 'a' });	
+	var logFile = fs.createWriteStream(os.homedir() + '/pitch-fork-log.txt', { flags: 'a' });
 	var headers = req.headers
 	var body = req.body
 	var dateTime = new Date()
-	var { "transaction_id": transactionId } = headers
-	var response = { "client_id": "test_user",
-			 "transaction_id": transactionId,
-			 "ack_id": transactionId, 
-			 "service_code": "farmer_reg_api", 
-			 "transaction_status": "S", 
-			 "transaction_remarks": "Success", 
-			 "transaction_start_date": dateTime, 
-			 "transaction_end_date": dateTime, 
-			 "row_affected": 1, 
-			 "response_code": 200, 
-			 "response_desc": "Success" };
-	
-	logFile.write('\n\n====================================='+ dateTime + '=====================================');
+	var clientId;
+
+	var { "transaction_id": transactionId, "authorization": auth } = headers
+	if (auth) {
+		auth = auth.split(' ')[1]
+		clientId = Buffer.from(auth, 'base64').toString()
+		clientId = clientId.split(':')[0]
+	}
+
+	var response = {
+		"client_id": clientId,
+		"transaction_id": transactionId,
+		"ack_id": transactionId,
+		"service_code": "farmer_reg_api",
+		"transaction_status": "S",
+		"transaction_remarks": "Success",
+		"transaction_start_date": dateTime,
+		"transaction_end_date": dateTime,
+		"row_affected": 1,
+		"response_code": 200,
+		"response_desc": "Success"
+	};
+
+	logFile.write('\n\n=====================================' + dateTime + '=====================================');
 	logFile.write('\nAPI: Farmers Registration')
-	logFile.write('\nRequest Headers:\n'+ JSON.stringify(headers, null, '\t'))
+	logFile.write('\nRequest Headers:\n' + JSON.stringify(headers, null, '\t'))
 	logFile.write('\nRequest Body:\n' + JSON.stringify(body, null, '\t'))
 	logFile.write('\nResponse Body:\n' + JSON.stringify(response, null, '\t'))
-	logFile.write('\n=================================================================================================================')			 
+	logFile.write('\n=================================================================================================================')
 	res.send(response)
 }
 
