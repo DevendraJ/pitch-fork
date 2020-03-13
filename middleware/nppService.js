@@ -2,18 +2,14 @@ const fs = require('fs')
 const os = require('os')
 
 exports.farmerAPIHandler = function (req, res) {
-    var logFile = fs.createWriteStream(os.homedir() + '/pitch-fork-log.txt', { flags: 'a' });
+	var logFile = fs.createWriteStream(os.homedir() + '/pitch-fork-log.txt', { flags: 'a' });
     var headers = req.headers
     var body = req.body
     var dateTime = new Date()
     var clientId;
 
-	var { "transaction_id": transactionId, "authorization": auth } = headers
-	if (auth) {
-		auth = auth.split(' ')[1]
-		clientId = Buffer.from(auth, 'base64').toString()
-		clientId = clientId.split(':')[0]
-	}
+	var { "transaction_id": transactionId} = headers
+	var clientId = req.params.clientId
 
 	var response = {
 		"client_id": clientId,
