@@ -6,8 +6,7 @@ exports.feastAPIHandler = function (req, res) {
     var body = req.body
     var tokenNO = body["tokenNO"]
     var date = new Date()
-    var acknowledgementID = date.getDate() + (date.getMonth() + 1) + date.getFullYear()
-        + date.getHours() + date.getMinutes() + date.getSeconds()
+    var acknowledgementID = `${date.getDate()}${(date.getMonth() + 1)}${date.getFullYear()}${date.getHours()}${date.getMinutes()}${date.getSeconds()}`
     var response = {
         "tokenNO": tokenNO,
         "respCode": "0",
